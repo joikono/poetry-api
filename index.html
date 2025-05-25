@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poetry Generator App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #4ecdc4;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .poem-result {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+            white-space: pre-line;
+            line-height: 1.6;
+            font-style: italic;
+            min-height: 100px;
+        }
+
+        .poem-result.has-content {
+            border-color: #4ecdc4;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        .error {
+            color: #e74c3c;
+            background: #fadbd8;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .success {
+            color: #27ae60;
+            background: #d5f4e6;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .poem-meta {
+            background: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 Poetry Generator</h1>
+            <p>Let AI create beautiful poems from your inspiration</p>
+        </div>
+
+        <div class="content">
+            <!-- Poem Generator Section -->
+            <div class="section">
+                <h2>📝 Create Your Poem</h2>
+                
+                <div class="form-group">
+                    <label for="poemPrompt">What should the poem be about?</label>
+                    <input 
+                        type="text" 
+                        id="poemPrompt" 
+                        placeholder="e.g., sunset, love, ocean waves, friendship..."
+                        maxlength="100"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="poemStyle">Poetry Style</label>
+                    <select id="poemStyle">
+                        <option value="free verse">Free Verse</option>
+                        <option value="haiku">Haiku</option>
+                        <option value="sonnet">Sonnet</option>
+                        <option value="limerick">Limerick</option>
+                        <option value="ballad">Ballad</option>
+                        <option value="acrostic">Acrostic</option>
+                    </select>
+                </div>
+
+                <button class="btn" id="generateBtn" onclick="generatePoem()">
+                    ✨ Generate Poem
+                </button>
+                
+                <button class="btn" id="clearBtn" onclick="clearPoem()">
+                    🗑️ Clear
+                </button>
+
+                <div id="poemResult" class="poem-result">
+                    Your generated poem will appear here...
+                </div>
+            </div>
+
+            <!-- API Status Section -->
+            <div class="section">
+                <h2>🔧 API Status</h2>
+                <div id="apiStatus">
+                    <button class="btn" onclick="checkApiStatus()">Check API Connection</button>
+                    <div id="statusResult" style="margin-top: 15px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:5000';
+        
+        // DOM elements
+        const generateBtn = document.getElementById('generateBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const poemPrompt = document.getElementById('poemPrompt');
+        const poemStyle = document.getElementById('poemStyle');
+        const poemResult = document.getElementById('poemResult');
+        const statusResult = document.getElementById('statusResult');
+
+        // Generate poem function
+        async function generatePoem() {
+            const prompt = poemPrompt.value.trim();
+            const style = poemStyle.value;
+
+            // Validation
+            if (!prompt) {
+                showError('Please enter a topic or theme for your poem!');
+                return;
+            }
+
+            // Update UI for loading state
+            generateBtn.disabled = true;
+            generateBtn.textContent = '🔄 Generating...';
+            poemResult.innerHTML = '<div class="loading">Creating your poem... This may take a few seconds ✨</div>';
+            poemResult.className = 'poem-result';
+
+            try {
+                // Make API request
+                const response = await fetch(`${API_BASE_URL}/api/poem?prompt=${encodeURIComponent(prompt)}&style=${encodeURIComponent(style)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayPoem(data);
+                } else {
+                    throw new Error(data.error || 'Unknown error occurred');
+                }
+
+            } catch (error) {
+                console.error('Error generating poem:', error);
+                showError(`Failed to generate poem: ${error.message}`);
+            } finally {
+                // Reset button state
+                generateBtn.disabled = false;
+                generateBtn.textContent = '✨ Generate Poem';
+            }
+        }
+
+        // Display poem in the result area
+        function displayPoem(data) {
+            const meta = `Prompt: "${data.prompt}" | Style: ${data.style} | Generated: ${data.timestamp}`;
+            
+            poemResult.innerHTML = `
+                <div class="poem-meta">${meta}</div>
+                ${data.poem}
+            `;
+            poemResult.className = 'poem-result has-content';
+        }
+
+        // Clear poem function
+        function clearPoem() {
+            poemResult.innerHTML = 'Your generated poem will appear here...';
+            poemResult.className = 'poem-result';
+            poemPrompt.value = '';
+        }
+
+        // Show error message
+        function showError(message) {
+            poemResult.innerHTML = `<div class="error">❌ ${message}</div>`;
+            poemResult.className = 'poem-result';
+        }
+
+        // Check API status
+        async function checkApiStatus() {
+            statusResult.innerHTML = '<div class="loading">Checking API connection...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusResult.innerHTML = `
+                        <div class="success">
+                            ✅ API is running successfully!<br>
+                            Message: ${data.message}
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                statusResult.innerHTML = `
+                    <div class="error">
+                        ❌ API connection failed: ${error.message}<br>
+                        Make sure your Flask server is running on ${API_BASE_URL}
+                    </div>
+                `;
+            }
+        }
+
+        // Allow Enter key to generate poem
+        poemPrompt.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generatePoem();
+            }
+        });
+
+        // Auto-check API status on page load
+        window.addEventListener('load', function() {
+            setTimeout(checkApiStatus, 1000);
+        });
+    </script>
+</body>
+</html>
